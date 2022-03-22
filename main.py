@@ -5,12 +5,16 @@ import bs4
 import sys
 import logging
 
-def logger(old_function):
-    def new_fuction(*args, **kwargs):
-        result = old_function(*args, **kwargs)
-        logging.info(f"Arguments: {args} {kwargs} - Return: {type(result)}")
-        return result
-    return new_fuction
+def logger_param(log_file):
+    def logger(old_function):
+        def new_fuction(*args, **kwargs):
+            result = old_function(*args, **kwargs)
+            log_format = f"%(asctime)s - [%(levelname)s] - %(name)s - %(funcName)s - %(message)s"
+            logging.basicConfig(filename=log_file, level=logging.INFO, format=log_format)
+            logging.info(f"Arguments: {args} {kwargs} - Return: {type(result)}")
+            return result
+        return new_fuction
+    return logger
 
 def article_parser(url, keywords_list):
     user_agent = {'User-agent': 'Mozilla/5.0'}
@@ -54,7 +58,7 @@ def check_articles(articles, keywords_list, url):
                     print(f'{datetime} - {title} - {url + href}')
                     break
 
-@logger
+@logger_param(log_file=input('''Enter the full path to log file (Ex.: tmp.log): '''))
 def get_articles(url):
     user_agent = {'User-agent': 'Mozilla/5.0'}
     try:
@@ -74,9 +78,6 @@ def get_articles(url):
 def main():
     KEYWORDS = ['дизайн', 'фото', 'web', 'python', 'Информационная безопасность *', 'Raspberry']
     url = 'https://habr.com'
-    log_file = input('''Enter the full path to log file (Ex.: tmp.log): ''')
-    log_format = f"%(asctime)s - [%(levelname)s] - %(name)s - %(funcName)s - %(message)s"
-    logging.basicConfig(filename=log_file, level=logging.INFO, format=log_format)
     articles = get_articles(url=url)
     check_articles(articles=articles, keywords_list=KEYWORDS, url=url)
 
